@@ -237,7 +237,12 @@ reference.addEventListener('timeupdate', () => { updateTime(); if (!reference.pa
 reference.addEventListener('loadedmetadata', updateTime); reference.addEventListener('ended', pause);
 $('seek').addEventListener('input', e => seekTo(Number(e.target.value)));
 $('mute').addEventListener('click', () => { reference.muted = !reference.muted; text('mute', reference.muted ? 'Sound off' : 'Sound on'); $('mute').setAttribute('aria-pressed', reference.muted); });
-$('speed').addEventListener('change', () => { reference.playbackRate = remake.playbackRate = Number($('speed').value); });
+function applyPlaybackSpeed() {
+  const rate = Number($('speed').value);
+  reference.defaultPlaybackRate = remake.defaultPlaybackRate = rate;
+  reference.playbackRate = remake.playbackRate = rate;
+}
+$('speed').addEventListener('change', applyPlaybackSpeed);
 function setMode(single) { state.single = single; $('comparison').classList.toggle('single', single); for (const [id, active] of [['compare-mode', !single], ['rebuilt-mode', single]]) { $(id).classList.toggle('active', active); $(id).setAttribute('aria-pressed', active); } }
 $('compare-mode').addEventListener('click', () => setMode(false)); $('rebuilt-mode').addEventListener('click', () => setMode(true));
 async function poll() {
