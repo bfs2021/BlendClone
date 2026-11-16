@@ -73,3 +73,24 @@ def test_job_json_without_created_does_not_break_listing(tmp_path):
     assert [entry['id'] for entry in jobs] == [job['id'], 'aaaaaaaaaaaa']
     Store(tmp_path).recover()
     assert store.get('aaaaaaaaaaaa')['status'] == 'interrupted'
+
+
+def test_job_json_that_is_not_an_object_does_not_break_listing(tmp_path):
+    store = Store(tmp_path)
+    job = store.create({'title': 'Test'})
+    (tmp_path / 'aaaaaaaaaaaa').mkdir()
+    (tmp_path / 'aaaaaaaaaaaa' / 'job.json').write_text('[]')
+    jobs = store.list()
+    assert [entry['id'] for entry in jobs] == [job['id']]
+    Store(tmp_path).recover()
+    assert store.get(job['id'])['status'] == 'interrupted'
+
+
+def test_job_json_without_status_does_not_break_recovery(tmp_path):
+    store = Store(tmp_path)
+    job = store.create({'title': 'Test'})
+    (tmp_path / 'aaaaaaaaaaaa').mkdir()
+    (tmp_path / 'aaaaaaaaaaaa' / 'job.json').write_text('{"id": "aaaaaaaaaaaa"}')
+    Store(tmp_path).recover()
+    assert store.get(job['id'])['status'] == 'interrupted'
+    assert store.get('aaaaaaaaaaaa') == {'id': 'aaaaaaaaaaaa'}

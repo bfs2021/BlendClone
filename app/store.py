@@ -51,12 +51,15 @@ class Store:
         jobs = []
         for path in self.root.glob('*/job.json'):
             try:
-                jobs.append(self.get(path.parent.name))
+                job = self.get(path.parent.name)
             except (ValueError, OSError):
                 continue
+            if not isinstance(job, dict) or job.get('id') != path.parent.name:
+                continue
+            jobs.append(job)
         return sorted(jobs, key=lambda j: j.get('created') or '', reverse=True)
 
     def recover(self):
         for job in self.list():
-            if job['status'] in ('queued', 'running'):
+            if job.get('status') in ('queued', 'running'):
                 self.update(job['id'], status='interrupted', message='App restarted. Retry this project to continue.')
