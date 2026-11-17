@@ -39,7 +39,10 @@ def download_arguments(url, dest):
 
 def download(url, dest, cancel):
     validate_url(url)
-    run(download_arguments(url, dest), timeout=240, cancel=cancel, log=dest.parent / 'download.log')
+    try:
+        run(download_arguments(url, dest), timeout=240, cancel=cancel, log=dest.parent / 'download.log')
+    except RuntimeError as error:
+        raise ValueError('Could not download that video. Check that the link is public, or upload the file instead.') from error
     merged=dest.with_suffix('.mp4')
     if merged != dest and merged.is_file():
         merged.replace(dest)
